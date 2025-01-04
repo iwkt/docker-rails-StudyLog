@@ -1,0 +1,12 @@
+/log/*
+/tmp/*
+/vendor/*
+/node_modules/
+/coverage/
+/.bundle
+/*.pid
+*.log
+docker-compose.override.yml
+.env
+/db/*.sqlite3
+/storage/*

@@ -1,0 +1,24 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: app_development
+  username: postgres # Docker Composeで設定したユーザー名
+  password: password # Docker Composeで設定したパスワード
+  host: db # Docker Composeで指定したサービス名
+
+test:
+  <<: *default
+  database: app_test
+  username: postgres
+  password: password
+  host: db
+
+production:
+  <<: *default
+  database: app_production
+  username: app
+  password: <%= ENV["APP_DATABASE_PASSWORD"] %>
