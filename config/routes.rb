@@ -4,4 +4,9 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "articles#index"
   resources :study_logs
+
+  # API専用のルート
+  namespace :api do
+    resources :study_logs, only: [:index, :create, :show]
+  end
 end
