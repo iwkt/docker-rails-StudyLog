@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="学習記録を管理するシンプルなフォームページ"
+    />
+    <title>学習記録フォーム</title>
+  </head>
+  <body>
+    <h1>学習記録を管理</h1>
+
+    <!-- データ作成フォーム -->
+    <h2>新しい学習記録を作成</h2>
+    <form id="createStudyLogForm">
+      <label for="title">タイトル:</label><br />
+      <input type="text" id="title" name="title" /><br />
+      <label for="content">内容:</label><br />
+      <textarea id="content" name="content"></textarea><br />
+      <label for="duration">時間:</label><br />
+      <input type="number" id="duration" name="duration" /><br /><br />
+      <button type="submit">作成</button>
+    </form>
+
+    <!-- データ一覧表示 -->
+    <h2>学習記録一覧</h2>
+    <ul id="studyLogsList"></ul>
+
+    <script>
+      async function fetchStudyLogs() {
+        try {
+          const response = await fetch("http://localhost:3000/api/study_logs");
+          if (!response.ok) {
+            console.error(
+              "データ取得エラー:",
+              response.status,
+              response.statusText
+            );
+            alert(
+              `データ取得エラー: ${response.status} ${response.statusText}`
+            );
+            return;
+          }
+
+          const data = await response.json();
+          const list = document.getElementById("studyLogsList");
+          list.innerHTML = "";
+
+          if (data.length === 0) {
+            list.innerHTML = "<li>データがありません。</li>";
+          } else {
+            data.forEach((log) => {
+              const listItem = document.createElement("li");
+              listItem.textContent = `${log.title} - ${log.duration}時間: ${log.content}`;
+              list.appendChild(listItem);
+            });
+          }
+        } catch (error) {
+          console.error("通信エラー:", error);
+          alert("通信エラーが発生しました。");
+        }
+      }
+
+      document
+        .getElementById("createStudyLogForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const title = document.getElementById("title").value;
+          const content = document.getElementById("content").value;
+          const duration = document.getElementById("duration").value;
+
+          if (!title || !content || !duration || isNaN(duration)) {
+            alert("すべての項目を正しく入力してください。");
+            return;
+          }
+
+          try {
+            const response = await fetch(
+              "http://localhost:3000/api/study_logs",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  study_log: {
+                    title: title,
+                    content: content,
+                    duration: parseInt(duration, 10),
+                  },
+                }),
+              }
+            );
+
+            if (!response.ok) {
+              try {
+                const errorData = await response.json();
+                console.error("エラー:", errorData);
+                alert(`データ送信エラー: ${errorData.error || "詳細不明"}`);
+              } catch (e) {
+                console.error("エラーデータの解析に失敗:", e);
+                alert("予期しないエラーが発生しました。");
+              }
+              return;
+            }
+
+            const data = await response.json();
+            alert("データが正常に作成されました！");
+            console.log("作成されたデータ:", data);
+            fetchStudyLogs();
+          } catch (error) {
+            console.error("通信エラー:", error);
+            alert("通信エラーが発生しました。");
+          }
+        });
+
+      fetchStudyLogs();
+    </script>
+  </body>
+</html>
